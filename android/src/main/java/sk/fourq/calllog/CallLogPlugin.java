@@ -5,6 +5,8 @@ import android.annotation.TargetApi;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.provider.CallLog;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -49,11 +51,15 @@ public class CallLogPlugin implements MethodCallHandler, PluginRegistry.RequestP
         request = c;
         result = r;
 
-        if (PackageManager.PERMISSION_GRANTED == registrar.activity().checkSelfPermission(Manifest.permission.READ_CALL_LOG)) {
-            handleCall();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (PackageManager.PERMISSION_GRANTED == registrar.activity().checkSelfPermission(Manifest.permission.READ_CALL_LOG)) {
+                handleCall();
+            } else {
+                String[] perm = {Manifest.permission.READ_CALL_LOG};
+                registrar.activity().requestPermissions(perm, 0);
+            }
         } else {
-            String[] perm = {Manifest.permission.READ_CALL_LOG};
-            registrar.activity().requestPermissions(perm, 0);
+            handleCall();
         }
     }
 
